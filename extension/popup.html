@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RefExplain AI</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-title">
+        <span class="logo-mark icon">
+          <!-- Cricket Wicket SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M7 20V5M12 20V5M17 20V5M5 5h14M3 20h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </span>
+        <h2>RefExplain Cricket AI</h2>
+      </div>
+      <p class="tagline">Official MCC Laws & ICC DRS decision analysis</p>
+    </header>
+
+    <div class="form-group">
+      <div class="label-row">
+        <label for="presetSelect">Preset Match Scenario</label>
+        <span class="subtext">Optional 1-click test</span>
+      </div>
+      <select id="presetSelect">
+        <!-- Dynamically populated based on selected sport without emojis -->
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="descriptionInput">Describe What Happened</label>
+      <textarea
+        id="descriptionInput"
+        placeholder="Describe the incident (e.g. ball contact point, positioning relative to line, referee sightline)..."
+        rows="4"
+      ></textarea>
+    </div>
+
+    <!-- Match Image / Screenshot Evidence (Optional) -->
+    <div class="form-group">
+      <div class="label-row">
+        <label>Broadcast Screenshot / Frame</label>
+        <span class="subtext">Optional image</span>
+      </div>
+      <div id="imageDropzone" class="image-dropzone">
+        <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp" style="display: none;">
+        <div id="uploadPrompt" class="upload-prompt">
+          <span class="icon icon-stroke upload-icon">
+            <svg viewBox="0 0 24 24">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </span>
+          <span class="upload-text"><strong>Attach image</strong>, drag &amp; drop, or Ctrl+V</span>
+        </div>
+        <div id="imagePreviewCard" class="image-preview-card" hidden>
+          <div class="image-preview-group">
+            <img id="imagePreviewImg" class="image-preview-thumb" alt="Thumbnail">
+            <div class="image-preview-text">
+              <span id="imagePreviewName" class="image-name">screenshot.png</span>
+              <span id="imagePreviewSize" class="image-size">0 KB &bull; Attached</span>
+            </div>
+          </div>
+          <button id="imageRemoveBtn" class="image-remove-btn" type="button" title="Remove image">
+            <span class="icon icon-stroke" style="width: 11px; height: 11px;">
+              <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button id="analyzeBtn" class="primary-btn" type="button">
+      <span class="btn-icon icon icon-stroke">
+        <svg viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+      </span>
+      <span class="btn-text">Explain Decision</span>
+    </button>
+
+    <div id="loading" class="loading-state" hidden>
+      <div class="spinner"></div>
+      <p id="loadingText">Consulting official rules & match evidence...</p>
+    </div>
+
+    <div id="result" class="result-container" hidden>
+      <div class="result-header">
+        <div class="result-title-group">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span id="sportBadge" class="sport-pill">CRICKET</span>
+            <span id="imageBadge" class="image-pill" hidden>
+              <span class="icon icon-stroke" style="width: 10px; height: 10px;">
+                <svg viewBox="0 0 24 24">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+              </span>
+              <span>Image Analyzed</span>
+            </span>
+          </div>
+          <h3>Decision Analysis</h3>
+        </div>
+        <span id="assessmentBadge" class="badge">Inconclusive</span>
+      </div>
+
+      <!-- Direct Decision Hero Banner -->
+      <div id="extHeroCard" style="background: var(--bg-subtle, #f4f1ea); border: 1.5px solid var(--border, #dcd5c9); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-size: 10px; font-weight: 800; color: #6e8275; letter-spacing: 0.5px; text-transform: uppercase;">DIRECT DECISION</span>
+          <span id="extHeroBadge" style="font-size: 12px; font-weight: 800; padding: 3px 8px; border-radius: 4px; border: 1px solid #1b4332; background: #e8f5e9; color: #1b4332;">NOT OUT</span>
+        </div>
+        <p id="extHeroSummary" style="font-size: 12px; line-height: 1.4; color: var(--text-main, #1c2720); margin: 0; font-weight: 500;"></p>
+      </div>
+
+      <div class="section-card">
+        <h4>1. WHAT HAPPENED</h4>
+        <p id="secWhatHappened"></p>
+      </div>
+
+      <div class="section-card">
+        <h4>2. APPLICABLE RULE</h4>
+        <p id="secApplicableRule"></p>
+      </div>
+
+      <div class="section-card">
+        <h4 id="secHeadingDecisionMaker">3. WHY OFFICIAL MADE THIS DECISION</h4>
+        <p id="secRefereeReasoning"></p>
+      </div>
+
+      <div class="section-card">
+        <h4>4. WHAT EVIDENCE SHOULD BE CHECKED</h4>
+        <p id="secEvidenceToCheck"></p>
+      </div>
+
+      <div class="section-card assessment-box">
+        <h4>5. AI ASSESSMENT & RATIONALE</h4>
+        <p id="secAssessment"></p>
+      </div>
+
+      <div id="rawFallback" hidden>
+        <div id="explanationText" class="raw-text"></div>
+      </div>
+    </div>
+
+    <div id="errorState" class="error-container" hidden>
+      <span class="error-icon icon icon-stroke">
+        <svg viewBox="0 0 24 24">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/>
+        </svg>
+      </span>
+      <p id="errorMessage" class="error-message"></p>
+    </div>
+
+    <footer>
+      <span>RefExplain Cricket AI &bull; Official MCC Laws & ICC DRS</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

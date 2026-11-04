@@ -1,0 +1,93 @@
+# ==============================================================================
+# RefExplain Cricket AI - Git Ignore Rules
+# ==============================================================================
+
+# 1. Environment Secrets & API Keys (Crucial: never commit secrets)
+.env
+*.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+credentials.json
+client_secret*.json
+
+# 2. Private Keys & Extension Signing Certificates
+*.pem
+*.key
+*.cert
+*.p12
+*.id_rsa
+
+# 3. Markdown Documentation Files (exclude all except README.md)
+*.md
+**/*.md
+!README.md
+!readme.md
+!**/README.md
+!**/readme.md
+
+# 4. Chrome Extension Packaged Binaries
+*.crx
+*.xpi
+
+# 5. Temporary Development Images, Screen Clips & Uploads
+thumb_crop.jpg
+thumb_exact.jpg
+uploads/
+user_uploads/
+temp_images/
+temp/
+tmp/
+scratch/
+.user_uploaded/
+
+# 6. Benchmark Reports & Test Caches
+*benchmark_report.json
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
+.tox/
+
+# 7. Python Compilation & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 8. Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# 9. Python Distribution & Build Artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# 10. Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+ehthumbs_vista.db
+$RECYCLE.BIN/
+
+# 11. IDE & Editor Artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# 12. Runtime Logs & Diagnostics
+*.log
+*.tmp
+*.jsonl

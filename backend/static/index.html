@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RefExplain AI — Official Sports Decision Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================================
+       BEIGE & FOREST GREEN THEME SYSTEM
+       ========================================================= */
+    :root, [data-theme="light"] {
+      --bg-primary: #f4f1ea;
+      --bg-surface: #ffffff;
+      --bg-subtle: #ece7de;
+      --border: #dcd5c9;
+      --border-focus: #1b4332;
+      --text-main: #18201a;
+      --text-muted: #5a665d;
+      --text-faint: #88948b;
+
+      /* Primary Brand / Action: Deep Forest Green */
+      --accent: #1b4332;
+      --accent-hover: #143628;
+      --accent-active: #0e261c;
+      --accent-glow: rgba(27, 67, 50, 0.16);
+
+      /* Sport Accents */
+      --sport-cricket: #8a6421;
+      --sport-cricket-bg: #fcf4e6;
+
+      /* Verdict Badges */
+      --badge-correct-bg: #d8f3dc;
+      --badge-correct-text: #1b4332;
+      --badge-correct-border: #95d5b2;
+
+      --badge-incorrect-bg: #fce8e6;
+      --badge-incorrect-text: #8c1d18;
+      --badge-incorrect-border: #f5b8b5;
+
+      --badge-inconclusive-bg: #fef3c7;
+      --badge-inconclusive-text: #78350f;
+      --badge-inconclusive-border: #fde68a;
+
+      --assessment-box-bg: #f9f6ee;
+      --assessment-box-border: #b89230;
+      --header-bg: rgba(244, 241, 234, 0.92);
+      --card-shadow: 0 2px 8px rgba(27, 67, 50, 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0f1612;
+      --bg-surface: #17221c;
+      --bg-subtle: #1f2e26;
+      --border: #2c3f34;
+      --border-focus: #52b788;
+      --text-main: #f3efe6;
+      --text-muted: #a3b8ab;
+      --text-faint: #6e8275;
+
+      /* Primary Brand / Action */
+      --accent: #40916c;
+      --accent-hover: #52b788;
+      --accent-active: #74c69d;
+      --accent-glow: rgba(82, 183, 136, 0.25);
+
+      /* Sport Accents */
+      --sport-cricket: #e9c46a;
+      --sport-cricket-bg: rgba(233, 196, 106, 0.14);
+
+      /* Verdict Badges */
+      --badge-correct-bg: rgba(82, 183, 136, 0.18);
+      --badge-correct-text: #74c69d;
+      --badge-correct-border: #40916c;
+
+      --badge-incorrect-bg: rgba(239, 68, 68, 0.18);
+      --badge-incorrect-text: #fca5a5;
+      --badge-incorrect-border: #ef4444;
+
+      --badge-inconclusive-bg: rgba(233, 196, 106, 0.18);
+      --badge-inconclusive-text: #fde68a;
+      --badge-inconclusive-border: #b89230;
+
+      --assessment-box-bg: #1c2720;
+      --assessment-box-border: #e9c46a;
+      --header-bg: rgba(15, 22, 18, 0.92);
+      --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Essential: Ensure hidden attribute strictly overrides display:flex */
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.55;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* SVG Icon Helpers */
+    .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .icon svg {
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+    }
+
+    .icon-stroke svg {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--header-bg);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .header-container {
+      max-width: 1220px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: var(--bg-surface);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px var(--accent-glow);
+    }
+
+    .brand-mark svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .brand-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .brand-name {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+      color: var(--text-main);
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .nav-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 5px;
+    }
+
+    .nav-link:hover {
+      color: var(--accent);
+      background: var(--bg-subtle);
+    }
+
+    .theme-toggle-btn {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle-btn .icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1220px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 24px 36px;
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    @media (max-width: 960px) {
+      main {
+        grid-template-columns: 1fr;
+        padding: 20px 16px;
+        gap: 24px;
+      }
+    }
+
+    /* Panels */
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 26px 24px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .panel-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 5px;
+      color: var(--text-main);
+      line-height: 1.25;
+    }
+
+    .panel-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+
+    /* Form Fields */
+    .field-group {
+      margin-bottom: 15px;
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--text-faint);
+      text-transform: none;
+      font-weight: 400;
+    }
+
+    .segmented-control {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .segmented-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 9px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    .segmented-btn .icon {
+      width: 15px;
+      height: 15px;
+    }
+
+
+
+    select, textarea {
+      width: 100%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-family: inherit;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235a665d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+
+    select:focus, textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.5;
+    }
+
+    /* Image Dropzone & Preview */
+    .upload-dropzone {
+      border: 1.5px dashed var(--border);
+      border-radius: 7px;
+      background: var(--bg-subtle);
+      padding: 13px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .upload-dropzone:hover,
+    .upload-dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--bg-surface);
+    }
+
+    .upload-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .upload-icon {
+      width: 22px;
+      height: 22px;
+      color: var(--text-muted);
+    }
+
+    .upload-text {
+      font-size: 12px;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .upload-text strong {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .upload-subtext {
+      font-size: 10.5px;
+      color: var(--text-faint);
+    }
+
+    .image-preview-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 10px;
+    }
+
+    .image-preview-thumb-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .image-preview-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 5px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg-surface);
+    }
+
+    .image-preview-info {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .image-preview-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    .image-preview-size {
+      font-size: 10.5px;
+      color: var(--text-muted);
+    }
+
+    .image-remove-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    .image-remove-btn:hover {
+      background: var(--badge-incorrect-bg);
+      color: var(--badge-incorrect-text);
+      border-color: var(--badge-incorrect-border);
+    }
+
+    .evidence-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .engine-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #eef7f2;
+      color: var(--accent);
+      border: 1px solid #b7dfc8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .engine-badge-pill.offline {
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      border-color: var(--border);
+    }
+
+    .warning-alert-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff8e6;
+      color: #8c5d00;
+      border: 1px solid #f2d89b;
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 6px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 12px 18px;
+      font-size: 13.5px;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px var(--accent-glow);
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .submit-btn .icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .submit-btn:active:not(:disabled) {
+      background: var(--accent-active);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Right Column: Output & Results */
+    .output-panel {
+      min-height: 590px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 36px 20px;
+      color: var(--text-faint);
+    }
+
+    .empty-mark {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .empty-mark .icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .empty-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .empty-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      max-width: 360px;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .empty-hint-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--text-faint);
+      background: var(--bg-subtle);
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .loading-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      gap: 14px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .loading-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 340px;
+      line-height: 1.5;
+    }
+
+    /* Results layout */
+    .result-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .result-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2px;
+    }
+
+    .result-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+    }
+
+    .sport-tag-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      line-height: 1;
+    }
+
+    .sport-tag-pill .icon {
+      width: 12px;
+      height: 12px;
+    }
+
+    .sport-tag-pill.cricket {
+      color: var(--sport-cricket);
+      background: var(--sport-cricket-bg);
+      border-color: var(--sport-cricket);
+    }
+
+    .incident-name {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .verdict-badge {
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border: 1px solid;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .verdict-badge.correct {
+      background: var(--badge-correct-bg);
+      color: var(--badge-correct-text);
+      border-color: var(--badge-correct-border);
+    }
+
+    .verdict-badge.incorrect {
+      background: var(--badge-incorrect-bg);
+      color: var(--badge-incorrect-text);
+      border-color: var(--badge-incorrect-border);
+    }
+
+    .verdict-badge.inconclusive {
+      background: var(--badge-inconclusive-bg);
+      color: var(--badge-inconclusive-text);
+      border-color: var(--badge-inconclusive-border);
+    }
+
+    .section-block {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .section-block h3 {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.3;
+    }
+
+    .section-block h3 .icon {
+      width: 13px;
+      height: 13px;
+    }
+
+    .section-block p {
+      font-size: 13.5px;
+      color: var(--text-main);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .assessment-block {
+      border-left: 3.5px solid var(--assessment-box-border);
+      background: var(--assessment-box-bg);
+    }
+
+    /* Direct Match Decision Hero Card */
+    .decision-hero-card {
+      background: var(--bg-subtle);
+      border: 1.5px solid var(--accent);
+      border-radius: 8px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      position: relative;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .decision-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .decision-hero-eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-faint);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .hero-decision-badge {
+      font-size: 15px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 6px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      border: 1.5px solid;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-decision-badge.badge-out {
+      background: rgba(239, 68, 68, 0.14);
+      color: #dc2626;
+      border-color: #ef4444;
+    }
+
+    .hero-decision-badge.badge-not-out {
+      background: rgba(40, 167, 69, 0.14);
+      color: #1b4332;
+      border-color: #2d6a4f;
+    }
+
+    [data-theme="dark"] .hero-decision-badge.badge-not-out {
+      background: rgba(82, 183, 136, 0.2);
+      color: #74c69d;
+      border-color: #52b788;
+    }
+
+    .hero-decision-badge.badge-neutral {
+      background: rgba(233, 196, 106, 0.2);
+      color: #b89230;
+      border-color: #e9c46a;
+    }
+
+    .hero-decision-text {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.45;
+    }
+
+    .hero-decision-footer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      border-top: 1px dashed var(--border);
+      padding-top: 8px;
+      margin-top: 2px;
+    }
+
+    .error-box {
+      background: var(--badge-incorrect-bg);
+      border: 1px solid var(--badge-incorrect-border);
+      color: var(--badge-incorrect-text);
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .error-box .icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      font-size: 12px;
+      color: var(--text-faint);
+      margin-top: auto;
+    }
+
+    .footer-container {
+      max-width: 1220px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-mark icon">
+          <!-- Scale / Balance SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3v18M6 8l6-5 6 5M6 8l-3 7h6L6 8zm12 0l-3 7h6l-3-7zM4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="brand-title-group">
+          <span class="brand-name">RefExplain AI</span>
+          <span class="brand-tag">Decision Analysis</span>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button id="apiKeyBtn" class="theme-toggle-btn" type="button" title="Configure Gemini API Key for live multimodal vision AI">
+          <span class="icon icon-stroke">
+            <!-- Key SVG -->
+            <svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          </span>
+          <span id="apiKeyLabel">Gemini Key</span>
+        </button>
+        <button id="themeToggleBtn" class="theme-toggle-btn" type="button" title="Switch Theme">
+          <span id="themeIconContainer" class="icon icon-stroke">
+            <!-- Sun SVG -->
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            </svg>
+          </span>
+          <span id="themeLabel">Dark</span>
+        </button>
+        <a class="nav-link" href="/docs" target="_blank">API Docs</a>
+        <a class="nav-link" href="/presets" target="_blank">Presets</a>
+        <a class="nav-link" href="/health" target="_blank">Health</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Column: Input Panel -->
+    <div class="panel">
+      <h1 class="panel-title">Analyze Cricket Decision</h1>
+      <p class="panel-subtitle" id="panelSubtitle">Evaluate umpire decisions against official MCC Laws of Cricket and ICC DRS protocols.</p>
+
+      <!-- Quick Preset (Optional) -->
+      <div class="field-group">
+        <div class="field-label">
+          <span>Preset Match Scenario</span>
+          <span class="field-hint">Optional 1-click test</span>
+        </div>
+        <select id="presetSelect"></select>
+      </div>
+
+      <!-- Description Input -->
+      <div class="field-group">
+        <label class="field-label" for="descriptionInput">Describe What Happened</label>
+        <textarea
+          id="descriptionInput"
+          placeholder="Describe the cricket incident (e.g. ball pitched outside off and struck front pad, UltraEdge spike timing, diving batter bat grounding vs popping crease line)..."
+        ></textarea>
+      </div>
+
+      <!-- Match Image / Screenshot Evidence (Optional) -->
+      <div class="field-group">
+        <div class="field-label">
+          <span>Match Broadcast Screenshot</span>
+          <span class="field-hint">Optional image evidence</span>
+        </div>
+        <div id="imageDropzone" class="upload-dropzone">
+          <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp" style="display: none;">
+          <div id="uploadPrompt" class="upload-prompt">
+            <span class="icon icon-stroke upload-icon">
+              <!-- Camera / Photo SVG -->
+              <svg viewBox="0 0 24 24">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </span>
+            <span class="upload-text"><strong>Browse image</strong>, drag &amp; drop, or paste (Ctrl+V)</span>
+            <span class="upload-subtext">VAR line freeze-frame, UltraEdge snicko spike, DRS ball-tracker (PNG, JPG, WebP)</span>
+          </div>
+          <div id="imagePreviewCard" class="image-preview-card" hidden>
+            <div class="image-preview-thumb-group">
+              <img id="imagePreviewImg" class="image-preview-thumb" alt="Broadcast screenshot thumbnail">
+              <div class="image-preview-info">
+                <span id="imagePreviewName" class="image-preview-name">screenshot.png</span>
+                <span id="imagePreviewSize" class="image-preview-size">0 KB &bull; Attached</span>
+              </div>
+            </div>
+            <button id="imageRemoveBtn" class="image-remove-btn" type="button" title="Remove attached screenshot">
+              <span class="icon icon-stroke" style="width: 12px; height: 12px;">
+                <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </span>
+              <span>Remove</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <button id="submitBtn" class="submit-btn" type="button">
+        <span class="icon icon-stroke">
+          <!-- Magnifying Search SVG -->
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+        </span>
+        <span>Explain Decision</span>
+      </button>
+    </div>
+
+    <!-- Right Column: Results & Analysis -->
+    <div class="panel output-panel">
+      <!-- Default Empty State -->
+      <div id="emptyState" class="empty-state">
+        <div class="empty-mark icon icon-stroke">
+          <!-- Clipboard Document SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 12h6M9 16h4"/>
+          </svg>
+        </div>
+        <h2 class="empty-title">Awaiting Match Incident</h2>
+        <p class="empty-text" id="emptyText">Describe a match incident or choose a preset scenario. RefExplain AI automatically detects the applicable rules and evaluates the official call.</p>
+        <div class="empty-hint-pill">
+          <span class="icon icon-stroke" style="width: 13px; height: 13px;">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </span>
+          <span>Tip: Paste (Ctrl+V) or drop a broadcast screenshot anytime</span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loadingState" class="loading-state" hidden>
+        <div class="spinner"></div>
+        <h2 class="loading-title">Analyzing Match Decision</h2>
+        <p id="loadingMsg" class="loading-desc">Evaluating incident against official rules &amp; match evidence...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="errorState" class="error-box" hidden>
+        <span class="icon icon-stroke">
+          <!-- Alert Triangle SVG -->
+          <svg viewBox="0 0 24 24">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/>
+          </svg>
+        </span>
+        <span id="errorMsg"></span>
+      </div>
+
+      <!-- Structured Results -->
+      <div id="resultContent" class="result-content" hidden>
+        <div class="result-header-bar">
+          <div class="result-meta">
+            <span id="resultSport" class="sport-tag-pill cricket">
+              <span id="resultSportIcon" class="icon icon-stroke">
+                <svg viewBox="0 0 24 24"><path d="M7 20V5M12 20V5M17 20V5M5 5h14M3 20h18"/></svg>
+              </span>
+              <span id="resultSportText">CRICKET</span>
+            </span>
+            <span id="resultIncident" class="incident-name">Cricket Decision</span>
+            <span id="resultEnginePill" class="engine-badge-pill" hidden>
+              <span class="icon icon-stroke" style="width: 12px; height: 12px;">
+                <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </span>
+              <span id="resultEngineText">Gemini Vision</span>
+            </span>
+            <span id="resultImageEvidence" class="evidence-pill" hidden>
+              <span class="icon icon-stroke" style="width: 12px; height: 12px;">
+                <svg viewBox="0 0 24 24">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+              </span>
+              <span>Visual Evidence</span>
+            </span>
+          </div>
+          <span id="resultVerdict" class="verdict-badge inconclusive">Inconclusive</span>
+        </div>
+
+        <!-- Warning Alert Notice (if API fell back) -->
+        <div id="resultWarningAlert" class="warning-alert-box" hidden>
+          <span class="icon icon-stroke" style="width: 16px; height: 16px; flex-shrink: 0;">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+          </span>
+          <span id="resultWarningText"></span>
+        </div>
+
+        <!-- Direct Match Decision Hero Card -->
+        <div id="directDecisionHero" class="decision-hero-card">
+          <div class="decision-hero-top">
+            <span class="decision-hero-eyebrow">OFFICIAL DIRECT DECISION</span>
+            <span id="heroDecisionBadge" class="hero-decision-badge badge-neutral">REVIEW</span>
+          </div>
+          <h2 id="heroDecisionSummary" class="hero-decision-text">Analyzing match scenario...</h2>
+          <div class="hero-decision-footer">
+            <span class="icon icon-stroke" style="width: 14px; height: 14px;">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </span>
+            <span id="heroDecisionContext">Verified against official rules &amp; visual match replay frame</span>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <h3>1. What Happened</h3>
+          <p id="secWhatHappened"></p>
+        </div>
+
+        <div class="section-block">
+          <h3>2. Applicable Rule</h3>
+          <p id="secApplicableRule"></p>
+        </div>
+
+        <div class="section-block">
+          <h3 id="secDecisionHeading">3. Why The Official Made This Decision</h3>
+          <p id="secReasoning"></p>
+        </div>
+
+        <div class="section-block">
+          <h3>4. Key Evidence To Check</h3>
+          <p id="secEvidence"></p>
+        </div>
+
+        <div class="section-block assessment-block">
+          <h3>5. AI Assessment & Rationale</h3>
+          <p id="secAssessment"></p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-container">
+      <span>RefExplain AI &bull; Official IFAB and MCC Laws Knowledge Engine</span>
+      <span>Beige &amp; Forest Green Edition</span>
+    </div>
+  </footer>
+
+  <script>
+    // Theme Management
+    const htmlElement = document.documentElement;
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    const themeIconContainer = document.getElementById("themeIconContainer");
+    const themeLabel = document.getElementById("themeLabel");
+
+    const SUN_SVG = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`;
+    const MOON_SVG = `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+    function setTheme(theme) {
+      htmlElement.setAttribute("data-theme", theme);
+      if (theme === "dark") {
+        themeIconContainer.innerHTML = SUN_SVG;
+        themeLabel.textContent = "Light";
+      } else {
+        themeIconContainer.innerHTML = MOON_SVG;
+        themeLabel.textContent = "Dark";
+      }
+      localStorage.setItem("refexplain_theme", theme);
+    }
+
+    const savedTheme = localStorage.getItem("refexplain_theme") || "light";
+    setTheme(savedTheme);
+
+    themeToggleBtn.addEventListener("click", () => {
+      const current = htmlElement.getAttribute("data-theme");
+      setTheme(current === "dark" ? "light" : "dark");
+    });
+
+    // Gemini API Key Configuration
+    const apiKeyBtn = document.getElementById("apiKeyBtn");
+    const apiKeyLabel = document.getElementById("apiKeyLabel");
+
+    function updateApiKeyUI() {
+      const savedKey = localStorage.getItem("refexplain_gemini_key");
+      if (apiKeyLabel) {
+        apiKeyLabel.textContent = savedKey ? "Vision AI: Active" : "Gemini Key";
+      }
+      if (apiKeyBtn) {
+        apiKeyBtn.style.borderColor = savedKey ? "var(--accent)" : "var(--border)";
+      }
+    }
+
+    if (apiKeyBtn) {
+      apiKeyBtn.addEventListener("click", () => {
+        const current = localStorage.getItem("refexplain_gemini_key") || "";
+        const entered = prompt(
+          "Enter your Google Gemini API Key for live generative multimodal Vision AI:\n(Leave blank to use the smart contextual offline reasoning engine)",
+          current
+        );
+        if (entered !== null) {
+          if (entered.trim()) {
+            localStorage.setItem("refexplain_gemini_key", entered.trim());
+          } else {
+            localStorage.removeItem("refexplain_gemini_key");
+          }
+          updateApiKeyUI();
+        }
+      });
+      updateApiKeyUI();
+    }
+
+    const CRICKET_ICON_SVG = `<svg viewBox="0 0 24 24"><path d="M7 20V5M12 20V5M17 20V5M5 5h14M3 20h18"/></svg>`;
+
+    const CRICKET_CONFIG = {
+      name: "CRICKET",
+      role: "UMPIRE",
+      rulebook: "MCC Laws & ICC DRS Protocols",
+      subtitle: "Evaluate umpire decisions against official MCC Laws of Cricket and ICC DRS protocols.",
+      placeholder: "Describe the cricket incident (e.g. ball pitched outside off and struck front pad in line with stumps, UltraEdge spike timing as ball passed bat, diving batter grounding vs popping crease line)...",
+      emptyPrompt: "Describe any cricket incident or choose a preset scenario. RefExplain AI will automatically identify the applicable rules and evaluate the umpire's call.",
+      loadingText: "Evaluating cricket incident against official MCC Laws & DRS tracking evidence...",
+      iconSvg: CRICKET_ICON_SVG,
+      presets: [
+        {
+          id: "kohli-lbw",
+          title: "LBW: Virat Kohli Umpire's Call on Impact",
+          incident: "LBW / DRS Umpire's Call",
+          description: "Kohli played forward to a ball spinning sharply back in. The ball struck him on the front pad in line with off stump. The on-field umpire ruled Out. Kohli reviewed via DRS; ball tracking showed impact clipping the 50% line of off stump, so Umpire's Call stood."
+        },
+        {
+          id: "mathews-timed-out",
+          title: "Timed Out: Angelo Mathews vs Bangladesh (World Cup)",
+          incident: "Timed Out",
+          description: "Mathews walked in to bat after a wicket fell. His helmet strap broke before taking guard. While waiting for a replacement helmet, Shakib Al Hasan appealed for 'Timed Out'. Umpires upheld the appeal as more than 2 minutes elapsed."
+        },
+        {
+          id: "deepti-mankad",
+          title: "Run Out: Deepti Sharma vs Charlie Dean (Lord's)",
+          incident: "Run Out at Non-Striker's End",
+          description: "Non-striker consistently backed up yards out of her crease before ball release. The bowler entered her delivery stride and took the bails off before completing the delivery swing. Batter was given out run out."
+        },
+        {
+          id: "nawaz-noball",
+          title: "No Ball: Nawaz Waist-High Full Toss to Kohli (MCG)",
+          incident: "Waist-High Full Toss (No Ball)",
+          description: "In the final over of a tense chase, bowler bowled a high full toss. Batter pulled it for six and signaled for waist-height no-ball. The square-leg umpire signaled a No Ball, granting a free hit."
+        },
+        {
+          id: "pant-caught-behind",
+          title: "UltraEdge: Rishabh Pant Caught Behind Dispute",
+          incident: "Caught Behind / UltraEdge",
+          description: "Fast bowler bowled a delivery shaping past outside edge. Keeper caught it and appealed. On-field umpire gave Not Out. On DRS review, UltraEdge displayed a murmur spike as ball was 2 inches past the bat blade. Umpire overturned to Out."
+        },
+        {
+          id: "boundary-catch",
+          title: "Boundary Catch: Boundary Rope Aerial Relay",
+          incident: "Boundary Catch / Aerial Relay",
+          description: "Fielder leaps inside the boundary rope, catches ball airborne, tosses it into the air before his momentum takes him over the rope. He steps back inside the boundary cushions and completes the catch cleanly."
+        },
+        {
+          id: "low-catch-grounded",
+          title: "Fair Catch: Low Diving Catch & Turf Contact Check",
+          incident: "Fair Catch / Grounded Catch (MCC Law 33)",
+          description: "Fielder dived forward to pouch a low catch inches above the turf. Umpires inspect super-slow-mo zoom frames to verify whether fingers were cleanly underneath the ball or if the ball touched the grass before control was established."
+        },
+        {
+          id: "run-out-crease-grounding",
+          title: "Run Out: Diving Batter Crease Grounding Check",
+          incident: "Run Out / Crease Grounding (MCC Law 38)",
+          description: "A diving batter stretches with outstretched bat towards the popping crease while the wicketkeeper breaks the wickets. The third umpire inspects side-on super-slow-mo frames to determine whether the bat grounded behind the crease before the bails separated."
+        }
+      ]
+    };
+
+    const panelSubtitle = document.getElementById("panelSubtitle");
+    const presetSelect = document.getElementById("presetSelect");
+    const descriptionInput = document.getElementById("descriptionInput");
+    const submitBtn = document.getElementById("submitBtn");
+
+    const imageDropzone = document.getElementById("imageDropzone");
+    const imageInput = document.getElementById("imageInput");
+    const uploadPrompt = document.getElementById("uploadPrompt");
+    const imagePreviewCard = document.getElementById("imagePreviewCard");
+    const imagePreviewImg = document.getElementById("imagePreviewImg");
+    const imagePreviewName = document.getElementById("imagePreviewName");
+    const imagePreviewSize = document.getElementById("imagePreviewSize");
+    const imageRemoveBtn = document.getElementById("imageRemoveBtn");
+    const resultImageEvidence = document.getElementById("resultImageEvidence");
+
+    let currentImageBase64 = null;
+
+    function handleImageFile(file) {
+      if (!file || !file.type.startsWith("image/")) {
+        showError("Please upload a valid image file (PNG, JPG, or WebP).");
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        showError("Image file size is too large (maximum 10 MB).");
+        return;
+      }
+      hideError();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        currentImageBase64 = e.target.result;
+        imagePreviewImg.src = currentImageBase64;
+        imagePreviewName.textContent = file.name || "Match broadcast screenshot";
+        const kb = Math.round(file.size / 1024);
+        imagePreviewSize.textContent = `${kb > 0 ? kb : 1} KB • Attached`;
+        uploadPrompt.hidden = true;
+        imagePreviewCard.hidden = false;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearImage() {
+      currentImageBase64 = null;
+      if (imageInput) imageInput.value = "";
+      if (imagePreviewImg) imagePreviewImg.src = "";
+      if (imagePreviewCard) imagePreviewCard.hidden = true;
+      if (uploadPrompt) uploadPrompt.hidden = false;
+    }
+
+    if (imageDropzone) {
+      imageDropzone.addEventListener("click", (e) => {
+        if (e.target.closest("#imageRemoveBtn")) return;
+        imageInput.click();
+      });
+
+      imageDropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        imageDropzone.classList.add("dragover");
+      });
+
+      imageDropzone.addEventListener("dragleave", () => {
+        imageDropzone.classList.remove("dragover");
+      });
+
+      imageDropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        imageDropzone.classList.remove("dragover");
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleImageFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (imageInput) {
+      imageInput.addEventListener("change", () => {
+        if (imageInput.files && imageInput.files[0]) {
+          handleImageFile(imageInput.files[0]);
+        }
+      });
+    }
+
+    if (imageRemoveBtn) {
+      imageRemoveBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        clearImage();
+      });
+    }
+
+    // Support Ctrl+V paste for broadcast screenshots
+    window.addEventListener("paste", (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            handleImageFile(file);
+            break;
+          }
+        }
+      }
+    });
+
+    const emptyState = document.getElementById("emptyState");
+    const emptyText = document.getElementById("emptyText");
+    const loadingState = document.getElementById("loadingState");
+    const loadingMsg = document.getElementById("loadingMsg");
+    const errorState = document.getElementById("errorState");
+    const errorMsg = document.getElementById("errorMsg");
+    const resultContent = document.getElementById("resultContent");
+
+    const resultSport = document.getElementById("resultSport");
+    const resultSportIcon = document.getElementById("resultSportIcon");
+    const resultSportText = document.getElementById("resultSportText");
+    const resultIncident = document.getElementById("resultIncident");
+    const resultVerdict = document.getElementById("resultVerdict");
+    const secDecisionHeading = document.getElementById("secDecisionHeading");
+    const secWhatHappened = document.getElementById("secWhatHappened");
+    const secApplicableRule = document.getElementById("secApplicableRule");
+    const secReasoning = document.getElementById("secReasoning");
+    const secEvidence = document.getElementById("secEvidence");
+    const secAssessment = document.getElementById("secAssessment");
+
+    // Initialize preset dropdown with Cricket presets
+    function initPresets() {
+      presetSelect.innerHTML = `<option value="">-- Choose a cricket scenario --</option>`;
+      CRICKET_CONFIG.presets.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.title;
+        presetSelect.appendChild(opt);
+      });
+      descriptionInput.placeholder = CRICKET_CONFIG.placeholder;
+      if (panelSubtitle) panelSubtitle.textContent = CRICKET_CONFIG.subtitle;
+      if (emptyText) emptyText.textContent = CRICKET_CONFIG.emptyPrompt;
+      if (loadingMsg) loadingMsg.textContent = CRICKET_CONFIG.loadingText;
+    }
+
+    // Synchronize preset selection: fills description
+    presetSelect.addEventListener("change", (e) => {
+      const id = e.target.value;
+      hideError();
+      if (!id) return;
+      const found = CRICKET_CONFIG.presets.find(p => p.id === id);
+      if (found) {
+        descriptionInput.value = found.description;
+      }
+    });
+
+    // Synchronize textarea typing: clear preset dropdown if user types custom text
+    descriptionInput.addEventListener("input", () => {
+      hideError();
+      const selectedPresetId = presetSelect.value;
+      if (selectedPresetId) {
+        const found = CRICKET_CONFIG.presets.find(p => p.id === selectedPresetId);
+        if (found && found.description !== descriptionInput.value) {
+          presetSelect.value = "";
+        }
+      }
+    });
+
+    submitBtn.addEventListener("click", async () => {
+      const description = descriptionInput.value.trim();
+      const hasImage = Boolean(currentImageBase64);
+
+      if (!description && !hasImage) {
+        showError("Please enter a description or upload a match screenshot.");
+        return;
+      }
+
+      hideError();
+      emptyState.hidden = true;
+      resultContent.hidden = true;
+      loadingState.hidden = false;
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch("/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sport: "cricket",
+            description: description,
+            image_base64: currentImageBase64,
+            api_key: localStorage.getItem("refexplain_gemini_key") || ""
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || `Server error (${res.status})`);
+        }
+
+        renderResult(data);
+      } catch (err) {
+        showError(err.message || "Unable to reach analysis service.");
+      } finally {
+        loadingState.hidden = true;
+        submitBtn.disabled = false;
+      }
+    });
+
+    function renderResult(data) {
+      resultSport.className = "sport-tag-pill cricket";
+      resultSportIcon.innerHTML = CRICKET_ICON_SVG;
+      resultSportText.textContent = "CRICKET";
+      resultIncident.textContent = data.incident || "Cricket Decision";
+      secDecisionHeading.textContent = "3. Why The Umpire Made This Decision";
+
+      // Visual evidence indicator
+      if (resultImageEvidence) {
+        resultImageEvidence.hidden = !data.has_image;
+      }
+
+      // Engine badge
+      const enginePill = document.getElementById("resultEnginePill");
+      const engineText = document.getElementById("resultEngineText");
+      if (enginePill && engineText) {
+        if (data.engine_used) {
+          engineText.textContent = data.engine_used;
+          enginePill.hidden = false;
+          if (data.engine_used.includes("Gemini")) {
+            enginePill.className = "engine-badge-pill";
+          } else {
+            enginePill.className = "engine-badge-pill offline";
+          }
+        } else {
+          enginePill.hidden = true;
+        }
+      }
+
+      // Warning / diagnostic notice
+      const warningBox = document.getElementById("resultWarningAlert");
+      const warningText = document.getElementById("resultWarningText");
+      if (warningBox && warningText) {
+        if (data.warning_notice) {
+          warningText.textContent = data.warning_notice;
+          warningBox.hidden = false;
+        } else {
+          warningBox.hidden = true;
+        }
+      }
+
+      // Populate Direct Match Decision Hero Card
+      const heroDecisionBadge = document.getElementById("heroDecisionBadge");
+      const heroDecisionSummary = document.getElementById("heroDecisionSummary");
+      const heroDecisionContext = document.getElementById("heroDecisionContext");
+
+      const directDecision = (data.direct_decision || "DECISION REVIEW").toUpperCase();
+      if (heroDecisionBadge) {
+        heroDecisionBadge.textContent = directDecision;
+        heroDecisionBadge.className = "hero-decision-badge";
+
+        if (directDecision.includes("NOT OUT")) {
+          heroDecisionBadge.classList.add("badge-not-out");
+        } else if (directDecision.includes("OUT") || directDecision.includes("NO BALL") || directDecision.includes("TIMED OUT")) {
+          heroDecisionBadge.classList.add("badge-out");
+        } else {
+          heroDecisionBadge.classList.add("badge-neutral");
+        }
+      }
+
+      if (heroDecisionSummary) {
+        heroDecisionSummary.textContent = data.decision_summary || (data.sections && data.sections.what_happened) || "Match decision evaluated against official MCC Laws.";
+      }
+
+      if (heroDecisionContext) {
+        heroDecisionContext.textContent = data.has_image ? "Direct visual match replay frame analysis & official MCC Laws" : `Evaluated under official ${CRICKET_CONFIG.rulebook}`;
+      }
+
+      // Verdict badge
+      const verdict = (data.assessment || "Inconclusive").trim();
+      resultVerdict.textContent = verdict;
+      resultVerdict.className = "verdict-badge";
+      const lower = verdict.toLowerCase();
+      if (lower.includes("appears correct")) {
+        resultVerdict.classList.add("correct");
+      } else if (lower.includes("appears incorrect")) {
+        resultVerdict.classList.add("incorrect");
+      } else {
+        resultVerdict.classList.add("inconclusive");
+      }
+
+      // Populate sections
+      if (data.sections && data.sections.what_happened) {
+        secWhatHappened.textContent = data.sections.what_happened;
+        secApplicableRule.textContent = data.sections.applicable_rule;
+        secReasoning.textContent = data.sections.referee_reasoning;
+        secEvidence.textContent = data.sections.evidence_to_check;
+        secAssessment.textContent = data.sections.assessment;
+      } else {
+        secWhatHappened.textContent = data.explanation || "";
+        secApplicableRule.textContent = `Official ${CRICKET_CONFIG.rulebook} regulations.`;
+        secReasoning.textContent = "Provided in detailed report.";
+        secEvidence.textContent = "Provided in detailed report.";
+        secAssessment.textContent = verdict;
+      }
+
+      loadingState.hidden = true;
+      emptyState.hidden = true;
+      resultContent.hidden = false;
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorState.hidden = false;
+    }
+
+    function hideError() {
+      errorState.hidden = true;
+    }
+
+    // Initialize with Cricket
+    initPresets();
+  </script>
+</body>
+</html>
